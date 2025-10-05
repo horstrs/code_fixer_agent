@@ -1,6 +1,7 @@
 from functions.get_file_info import get_file_info
 from functions.get_file_content import get_file_content
 from functions.write_file import write_file
+from functions.run_python_file import run_python_file
 
 
 def test_read_directory():
@@ -52,22 +53,56 @@ def test_read_file():
     print("======================")
     print("")
 
+
 def test_write_file():
 
     result = write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
-    print("Result for current directory:")
+    print("Result for lorem.txt:")
     print(result)
     print("======================")
     print("")
 
     result = write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet")
-    print("Result for current directory:")
+    print("Result for new-ish file morelorem.txt:")
     print(result)
     print("======================")
     print("")
 
     result = write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
-    print("Result for current directory:")
+    print("Result for home directory:")
+    print(result)
+    print("======================")
+    print("")
+
+
+def test_run_python_file():
+
+    result = run_python_file("calculator", "main.py")
+    print("Result for running calculator without parameters - should print usage instructions:")
+    print(result)
+    print("======================")
+    print("")
+
+    result = run_python_file("calculator", "main.py", ["3 + 5"])
+    print("Result for running the calculator - should give a kinda nasty rendered result:")
+    print(result)
+    print("======================")
+    print("")
+
+    result = run_python_file("calculator", "tests.py")
+    print("Result for running calculator test file:")
+    print(result)
+    print("======================")
+    print("")
+
+    result = run_python_file("calculator", "../main.py") 
+    print("Result for running the calculator - (this should return an error, as it's outside wd):")
+    print(result)
+    print("======================")
+    print("")
+
+    result = run_python_file("calculator", "nonexistent.py")
+    print("Result for running the calculator - (this should return an error, as file doesn't exist):")
     print(result)
     print("======================")
     print("")
@@ -76,4 +111,5 @@ def test_write_file():
 if __name__ == "__main__":
     #test_read_directory()
     #test_read_file()
-    test_write_file()
+    #test_write_file()
+    test_run_python_file()

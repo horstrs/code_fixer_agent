@@ -15,7 +15,7 @@ schema_get_files_info = types.FunctionDeclaration(
     ),
 )
 
-def get_file_info(working_directory, directory="."):
+def get_files_info(working_directory, directory="."):
     try:
         directory_path = get_dir_path(working_directory, directory)
         directory_list = os.listdir(directory_path)

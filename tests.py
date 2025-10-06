@@ -1,28 +1,28 @@
-from functions.get_file_info import get_file_info
+from functions.get_file_info import get_files_info
 from functions.get_file_content import get_file_content
 from functions.write_file import write_file
 from functions.run_python_file import run_python_file
 
 
 def test_read_directory():
-    result = get_file_info("calculator", ".")
+    result = get_files_info("calculator", ".")
     print("Result for current directory:")
     print(result)
     print("======================")
     print("")
 
-    result = get_file_info("calculator", "pkg")
+    result = get_files_info("calculator", "pkg")
     print("Result for 'pkg' directory:")
     print(result)
     print("======================")
     print("")
 
-    result = get_file_info("calculator", "/bin")
+    result = get_files_info("calculator", "/bin")
     print("Result for '/bin' directory:")
     print(result)
     print("")
 
-    result = get_file_info("calculator", "../")
+    result = get_files_info("calculator", "../")
     print("Result for '../' directory:")
     print(result)
     print("")

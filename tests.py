@@ -107,6 +107,25 @@ def test_run_python_file():
     print("======================")
     print("")
 
+"""
+def test_main_file_info():
+
+    result = run_python_file("calculator", "main.py")
+    print("Result for running calculator without parameters - should print usage instructions:")
+    print(result)
+    print("======================")
+    print("")
+
+    result = run_python_file("calculator", "main.py", ["3 + 5"])
+    print("Result for running the calculator - should give a kinda nasty rendered result:")
+    print(result)
+    print("======================")
+    print("")
+
+"what files are in the root?" -> get_files_info({'directory': '.'})
+"what files are in the pkg directory?" -> get_files_info({'directory': 'pkg'})
+"""
+
 
 if __name__ == "__main__":
     #test_read_directory()

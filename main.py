@@ -8,6 +8,8 @@ from functions.get_file_content import schema_get_file_content
 from functions.run_python_file import schema_run_python_file
 from functions.write_file import schema_write_file
 from functions.call_functions import call_function
+from config import MAX_TOOL_CALLS
+from config import SYSTEM_PROMPT
 
 
 def main():
@@ -35,23 +37,13 @@ def main():
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
+
     generate_content(client, messages, verbose)
+    
 
 
-def generate_content(client, messages, verbose):
-    system_prompt = """
-    You are a helpful AI coding agent.
-
-    When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
-
-    - List files and directories
-    - Read file contents
-    - Execute Python files with optional arguments
-    - Write or overwrite files
-
-    All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
-    """
-
+def generate_content(client, initial_message, verbose):
+    
     available_functions = types.Tool(
         function_declarations=[
             schema_get_files_info,
@@ -60,33 +52,45 @@ def generate_content(client, messages, verbose):
             schema_write_file,
         ]
     )
+    messages = initial_message
 
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions], system_instruction=system_prompt
-        ),
-    )
+    for i in range(0,MAX_TOOL_CALLS):
+        if verbose:
+            print(f"This is iteration #{i}")
+        response = client.models.generate_content(
+            model='gemini-2.0-flash-001',
+            contents=messages,
+            config=types.GenerateContentConfig(
+                tools=[available_functions], system_instruction=SYSTEM_PROMPT
+            ),
+        )
+        if not response.candidates:
+            break
 
-    if verbose == True:
-        #for content in messages:
-        #    if content.role == 'user':
-        #        user_prompt = content.parts[0].text
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+        for candidate in response.candidates:
+            messages.append(candidate.content)
 
-    if response.function_calls:
-        for function_call_part in response.function_calls:
-            print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-            function_call_result = call_function(function_call_part, verbose)
-            if not function_call_result.parts[0].function_response.response:
-                raise Exception(f"Error: no function response returned from {function_call_part.name}")
-            if verbose:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
-    else:    
-        print("Response:")
-        print(response.text)
+        if verbose == True:
+            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+        try:
+            if response.function_calls:
+                for function_call_part in response.function_calls:
+                    function_call_result = call_function(function_call_part, verbose)
+                    if not function_call_result.parts[0].function_response.response:
+                        raise Exception(f"Error: no function response returned from {function_call_part.name}")
+                    new_message = types.Content(role="user", parts=function_call_result.parts)
+                    messages.append[new_message]
+                    if verbose:
+                        print(f"-> {function_call_result.parts[0].function_response.response}")
+            elif response.text:
+                print("Response:")
+                print(response.text)
+            else:
+                raise Exception(f"Error: no response returned from LLM")
+        except Exception as e:
+            print(e)
+    
 
 if __name__ == "__main__":
     main()
